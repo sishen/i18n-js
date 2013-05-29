@@ -33,13 +33,14 @@ module I18n
       end
     end
 
-    def self.segments_per_locale(pattern, scope)
+    def self.segments_per_locale(pattern, scopes)
       I18n.available_locales.each_with_object({}) do |locale, segments|
-        result = scoped_translations("#{locale}.#{scope}")
-        next if result.empty?
-
         segment_name = ::I18n.interpolate(pattern,{:locale => locale})
-        segments[segment_name] = result
+        [scopes].flatten.each do |scope|
+          result = scoped_translations("#{locale}.#{scope}")
+          (segments[segment_name] ||= {}).deep_merge!(result) unless result.empty?
+        end
+        segments
       end
     end
 
